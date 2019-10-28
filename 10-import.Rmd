@@ -1,0 +1,92 @@
+---
+title: "10-import"
+output: html_notebook
+---
+## Load needed libraries and dataset
+```{r load dataset and library}
+# import dataset and library
+library(tidyverse)
+library(stringr)
+library(dplyr)
+library(assertr)
+library(readr)
+Hostel <- read_csv("Hostel.csv")
+```
+
+
+## Describe the data
+The dataset I choose is Japan Hostel Dataset, which has 342 hostels in Japan. It includes 16 columns:
+hostel number: hostel's number
+hostel.name: name of hostel
+City: location of hostel
+price.from: price of hostel
+Distance: distance from hostel to city centre
+summary.score: overall score of hostel which equals to the average of the following 8 columns
+rating.band: rating band of hostel, which includes "Superb", "Fabulous", "Very Good", "Good" and "Rating"
+atmosphere: rating of atmosphere in hostel
+cleanliness: rating of cleanliness of hostel
+facilities: quality of hostel's facilities
+location.y: rating of hostel's location
+security: rating of surrounding and hostel security
+staff: rating of staff
+valueformoney: whether it is worthwhile to choose the hostel
+lon: longitude of hostel
+lat: latitude of hostel
+
+
+## Read in and check data
+Brief view of data
+```{r brief view of data}
+# show first 6 rows of data 
+head(Hostel)
+```
+
+
+Detect the attribute of each column
+```{r check data}
+str(Hostel)
+```
+
+
+Detect whether there is any null or NA value in dataset
+```{r detect null and NA value}
+# detect null value
+is.null(Hostel)
+
+# detect NA value
+Hostel %>% 
+  verify(!is.na(.))
+```
+Therefore the dataset has 0 null value and 223 NA values.
+
+
+Check extreme value in 8 rating columns
+```{r check extreme value in 8 rating columns}
+Hostel%>%
+  assert(within_bounds(0,10),summary.score)%>% # check if there exist extreme value in summary.score
+  assert(within_bounds(0,10),atmosphere)%>% # check if there exist extreme value in atmosphere
+  assert(within_bounds(0,10),cleanliness)%>% # check if there exist extreme value in cleanliness
+  assert(within_bounds(0,10),facilities)%>% # check if there exist extreme value in facilities
+  assert(within_bounds(0,10),location.y)%>% # check if there exist extreme value in location.y
+  assert(within_bounds(0,10),security)%>% # check if there exist extreme value in security
+  assert(within_bounds(0,10),staff)%>% # check if there exist extreme value in staff
+  assert(within_bounds(0,10),valueformoney) # check if there exist extreme value in valueformoney
+```
+The result shows that there are not any extreme value in 8 rating columns.
+
+
+## Clean up the data. 
+In last chunk, we knew that the dataset has already recorded NA values. Therefore we do not need to do it again. In this section, I want to make the column Distance into a column which only contains numbers, because numeric data is easier to be analysed. So I delete the words in Distance.    
+```{r data cleaning}
+# remove certain words from Distance 
+for(i in 1:nrow(Hostel)){
+  Hostel$Distance[i] <- gsub("km from city centre","",Hostel$Distance[i])
+}
+
+# change Distance's type into numeric
+Hostel$Distance <- as.numeric(Hostel$Distance)
+# check the result
+str(Hostel)
+```
+Now the column Distance has been successfully changed into numeric column.
+

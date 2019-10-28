@@ -1,0 +1,17 @@
+---
+title: "40-modelling"
+output: html_notebook
+---
+
+## Prepare data for modelling
+```{r prepare data}
+Hostel_prepared <- Hostel%>%
+  #standardize(summary.score,'summary.score')%>%
+  #highest(summary.score,'summary.score')%>%
+  rank_percent(summary.score,'summary.score')%>%
+  ave_score(summary.score,'summary.score')%>%
+  head()
+
+write.csv(Hostel_prepared,"Hostel_prepared.csv")
+```
+

@@ -1,0 +1,88 @@
+---
+title: "30-feature-engineering"
+output: html_notebook
+---
+
+# Create features for modelling
+
+## Function 1: rank of desired column in different city
+Showing the rank of a specific hostel in its region is useful for tourists to check whether the hostel is good in its region. This function creates a new column to calculate the rank of each hostel, which equals to
+rank(hostel)/total number of hostel in that region. Therefore, a value closes to 0 means the hostel is good in its region. 
+```{r funciton 1: ranking}
+rank_percent <- function(data,column,column_name){
+  data <- data%>%
+    group_by(City)%>% # separately calculate the rank in different city
+    mutate(rank_percentage = rank({{column}}, ties.method =c("first"), na.last = TRUE)/n())%>%
+    select(rank_percentage,everything())
+  names(data)[1] <- paste0(column_name,'_rank_percentage') # rename the new column
+  data
+}
+```
+
+Test whether all of the value in the new column created by function 1 is in interval [0,1].
+```{r test function 1}
+Hostel%>%
+  rank_percent(summary.score,'summary.score')%>%
+  as.data.frame()%>%
+  assert(within_bounds(lower.bound = 0, upper.bound = 1, allow.na = FALSE),summary.score_rank_percentage)
+```
+The new column summary.score_rank_percentage created by function 1 does not include any value outside interval [0,1].
+
+
+## Function 2: average score of desired column in different city
+Average score is an important indicator when evaluating a given score. Function 2 creates a new column to calculate the average value in different city of a desired column.
+```{r function 2: average score in different city}
+ave_score <- function(data,column,column_name){
+  data <- data%>%
+    group_by(City)%>% # seperate dataset by City
+    mutate(ave_rate = ave({{column}},FUN = function(x) mean(x, na.rm = TRUE)))%>% # calculate average score seperately
+    select(ave_rate,everything())
+  names(data)[1] <- paste0(column_name,'_ave') # rename the new column
+  data
+}
+```
+
+Test whether all of the value in the new column created by function 2 is in interval [0,10].
+```{r test function 2}
+Hostel%>%
+  ave_score(summary.score,'summary.score')%>%
+  as.data.frame()%>%
+  assert(within_bounds(lower.bound = 0, upper.bound = 10, allow.na = FALSE),summary.score_ave)
+```
+The new column summary.score_ave created by function 2 does not include any value outside interval [0,10].
+
+
+## Function 3: standardize desired column
+Standardizing numeric data is necessary in data analysis. In this function we want to standardize the given column and put it into a new column whose name can change as the given column changes. For example, when we type standardize(Hostel,cleanliness,'cleanliness'), we hope the name of new column to be cleanliness_std.
+input: dataset, column, column name
+output: create a new column which standardizes the given column
+```{r function 3: standardize column}
+standardize <- function(data,column,column_name){
+
+}
+```
+
+Test whether the transformation works
+```{r test function 3}
+Hostel%>%
+  standardize(summary.score,'summary.score')%>%
+  verify((summary.score_std*sd(summary.score,na.rm=T)+mean(summary.score,na.rm=T)-summary.score)<0.001)
+```
+
+
+## Function 4: highest score of desired column in different city
+The highest score helps tourists to learn the upper bound of a given region. For example, they can learn the highest score of security in Tokyo. In this function we want to find the maximum value for a given column in different city and put it into a new column whose name can change as the given column changes. The rename part is similar with the previous three function.
+input: dataset, column, column name
+output: create a new column which write out the maximum vaue of the given column
+```{r function 4: highest score}
+highest <- function(data,column,column_name){
+
+}
+```
+
+Test whether their is any NA value in the new column
+```{r test function 4}
+Hostel%>%
+  highest(summary.score,'summary.score')%>%
+  verify(not_na,summary.score_max)
+```
