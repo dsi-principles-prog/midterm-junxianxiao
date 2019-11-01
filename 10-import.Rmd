@@ -10,6 +10,7 @@ library(stringr)
 library(dplyr)
 library(assertr)
 library(readr)
+library(janitor)
 Hostel <- read_csv("Hostel.csv")
 ```
 

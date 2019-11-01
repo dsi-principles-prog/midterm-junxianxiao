@@ -21,6 +21,11 @@ rank_percent <- function(data,column,column_name){
 
 Test whether all of the value in the new column created by function 1 is in interval [0,1].
 ```{r test function 1}
+Hostel %>% 
+  filter(!is.na(cleanliness_std)) %>% 
+  assert(cleanliness_std)
+
+?assert
 Hostel%>%
   rank_percent(summary.score,'summary.score')%>%
   as.data.frame()%>%
@@ -57,32 +62,19 @@ Standardizing numeric data is necessary in data analysis. In this function we wa
 input: dataset, column, column name
 output: create a new column which standardizes the given column
 ```{r function 3: standardize column}
-standardize <- function(data,column,column_name){
-
+standardize <- function(data, col) {
+  data %>%
+    mutate(!!paste0(col, "_std") := (!!sym(col) - mean(!!sym(col), na.rm=TRUE)) / sd(!!sym(col), na.rm=TRUE))
 }
+
+Hostel <- Hostel %>% 
+  standardize("cleanliness")
 ```
 
 Test whether the transformation works
 ```{r test function 3}
-Hostel%>%
-  standardize(summary.score,'summary.score')%>%
-  verify((summary.score_std*sd(summary.score,na.rm=T)+mean(summary.score,na.rm=T)-summary.score)<0.001)
-```
-
-
-## Function 4: highest score of desired column in different city
-The highest score helps tourists to learn the upper bound of a given region. For example, they can learn the highest score of security in Tokyo. In this function we want to find the maximum value for a given column in different city and put it into a new column whose name can change as the given column changes. The rename part is similar with the previous three function.
-input: dataset, column, column name
-output: create a new column which write out the maximum vaue of the given column
-```{r function 4: highest score}
-highest <- function(data,column,column_name){
-
-}
-```
-
-Test whether their is any NA value in the new column
-```{r test function 4}
-Hostel%>%
-  highest(summary.score,'summary.score')%>%
-  verify(not_na,summary.score_max)
+Hostel %>% 
+  filter(!is.na(cleanliness_std)) %>% 
+  assert(within_bounds(-8, 8)) %>% 
+  assert(function(x) (x - mean(x)) / std(x) == cleanliness_std)
 ```
